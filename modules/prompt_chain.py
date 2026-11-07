@@ -1,52 +1,68 @@
 
-import requests
+
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
+import streamlit as st
+from google import genai
+from google.genai import types
+
 from config import (
-    OLLAMA_API_URL,
     MODEL_NAME,
     CHAIN_TRACE_FILE
 )
-
 
 # Find the main project directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # --------------------------------------------------
-# FUNCTION 1: COMMUNICATE WITH OLLAMA
+# FUNCTION 1: COMMUNICATE WITH GEMINI
 # --------------------------------------------------
 
-def call_ollama(prompt):
+def call_gemini(prompt):
 
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "stream": False,
-        "options": {
-            "temperature": 0.4,
-            "num_predict": 2500
-        }
-    }
+    # First check environment variables
+    api_key = os.getenv("GEMINI_API_KEY")
 
-    response = requests.post(
-        OLLAMA_API_URL,
-        json=payload,
-        timeout=600
+    # If not found, check Streamlit Secrets
+    if not api_key:
+        try:
+            api_key = st.secrets["GEMINI_API_KEY"]
+        except Exception:
+            api_key = None
+
+    if not api_key:
+        raise RuntimeError(
+            "Gemini API key is missing. "
+            "Please configure GEMINI_API_KEY in Streamlit Secrets."
+        )
+
+    # Create Gemini client
+    client = genai.Client(api_key=api_key)
+
+    # Send prompt to Gemini
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            temperature=0.4,
+            max_output_tokens=2500
+        )
     )
 
-    response.raise_for_status()
+    if not response.text:
+        raise RuntimeError("Gemini returned an empty response.")
 
-    result = response.json()
+    return response.text.strip()
 
-    return result["message"]["content"]
+
+# Temporary compatibility wrapper:
+# Existing chain functions can continue using call_ollama().
+def call_ollama(prompt):
+    return call_gemini(prompt)
 
 
 # --------------------------------------------------
