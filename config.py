@@ -3,7 +3,7 @@
 
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 
-MODEL_NAME = "llama3.2:3b"
+MODEL_NAME = "gemini-3.8-flash"
 
 # Output configuration
 
