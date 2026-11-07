@@ -5,3 +5,4 @@ sentence-transformers
 faiss-cpu
 pymupdf
 numpy
+google-genai
