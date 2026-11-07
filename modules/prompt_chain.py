@@ -1,5 +1,4 @@
 
-
 import json
 import os
 from datetime import datetime
@@ -14,7 +13,11 @@ from config import (
     CHAIN_TRACE_FILE
 )
 
-# Find the main project directory
+
+# --------------------------------------------------
+# PROJECT DIRECTORY
+# --------------------------------------------------
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -24,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 def call_gemini(prompt):
 
-    # First check environment variables
+    # First, check environment variables
     api_key = os.getenv("GEMINI_API_KEY")
 
     # If not found, check Streamlit Secrets
@@ -34,13 +37,15 @@ def call_gemini(prompt):
         except Exception:
             api_key = None
 
+    # Check whether API key exists
     if not api_key:
         raise RuntimeError(
             "Gemini API key is missing. "
-            "Please configure GEMINI_API_KEY in Streamlit Secrets."
+            "Please configure GEMINI_API_KEY "
+            "in Streamlit Secrets."
         )
 
-    # Create Gemini client
+    # Create Gemini API client
     client = genai.Client(api_key=api_key)
 
     # Send prompt to Gemini
@@ -53,15 +58,26 @@ def call_gemini(prompt):
         )
     )
 
+    # Validate response
     if not response.text:
-        raise RuntimeError("Gemini returned an empty response.")
+        raise RuntimeError(
+            "Gemini returned an empty response."
+        )
 
     return response.text.strip()
 
 
-# Temporary compatibility wrapper:
-# Existing chain functions can continue using call_ollama().
+# --------------------------------------------------
+# COMPATIBILITY FUNCTION
+# --------------------------------------------------
+
+# Existing functions use call_ollama().
+# We keep this function name so the rest of
+# the existing report-generation workflow
+# does not need to be modified.
+
 def call_ollama(prompt):
+
     return call_gemini(prompt)
 
 
@@ -93,8 +109,10 @@ def save_chain_trace(trace):
     if trace_path.exists():
 
         with open(trace_path, "r", encoding="utf-8") as file:
+
             try:
                 traces = json.load(file)
+
             except json.JSONDecodeError:
                 traces = []
 
@@ -138,7 +156,9 @@ def create_trace(step, stage, prompt, output):
 
 def generate_outline(topic, word_count, writing_style):
 
-    prompt_template = load_prompt("outline_prompt.txt")
+    prompt_template = load_prompt(
+        "outline_prompt.txt"
+    )
 
     prompt = (
         prompt_template
@@ -147,7 +167,8 @@ def generate_outline(topic, word_count, writing_style):
         .replace("{writing_style}", writing_style)
     )
 
-    outline = call_ollama(prompt)
+    # Generate outline using Gemini
+    outline = call_gemini(prompt)
 
     trace = create_trace(
         1,
@@ -171,7 +192,9 @@ def generate_outline(topic, word_count, writing_style):
 
 def generate_draft(topic, word_count, writing_style, outline):
 
-    prompt_template = load_prompt("writing_prompt.txt")
+    prompt_template = load_prompt(
+        "writing_prompt.txt"
+    )
 
     prompt = (
         prompt_template
@@ -181,7 +204,8 @@ def generate_draft(topic, word_count, writing_style, outline):
         .replace("{outline}", outline)
     )
 
-    draft = call_ollama(prompt)
+    # Generate initial report draft
+    draft = call_gemini(prompt)
 
     trace = create_trace(
         2,
@@ -199,7 +223,9 @@ def generate_draft(topic, word_count, writing_style, outline):
 
 def review_report(topic, draft):
 
-    prompt_template = load_prompt("review_prompt.txt")
+    prompt_template = load_prompt(
+        "review_prompt.txt"
+    )
 
     prompt = (
         prompt_template
@@ -207,7 +233,8 @@ def review_report(topic, draft):
         .replace("{draft}", draft)
     )
 
-    feedback = call_ollama(prompt)
+    # Ask Gemini to review its generated report
+    feedback = call_gemini(prompt)
 
     trace = create_trace(
         3,
@@ -225,7 +252,9 @@ def review_report(topic, draft):
 
 def revise_report(draft, feedback):
 
-    prompt_template = load_prompt("revision_prompt.txt")
+    prompt_template = load_prompt(
+        "revision_prompt.txt"
+    )
 
     prompt = (
         prompt_template
@@ -233,7 +262,8 @@ def revise_report(draft, feedback):
         .replace("{feedback}", feedback)
     )
 
-    revised_report = call_ollama(prompt)
+    # Generate revised report using review feedback
+    revised_report = call_gemini(prompt)
 
     trace = create_trace(
         4,
@@ -276,9 +306,11 @@ def execute_report_chain(
         feedback
     )
 
-    # Save every stage in the execution history
+    # Save every stage in execution history
     save_chain_trace(draft_trace)
+
     save_chain_trace(review_trace)
+
     save_chain_trace(revision_trace)
 
     return {
