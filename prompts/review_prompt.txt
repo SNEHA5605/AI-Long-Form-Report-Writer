@@ -1,0 +1,39 @@
+
+You are an expert academic report reviewer.
+
+Review the following research report.
+
+REPORT TOPIC:
+{topic}
+
+REPORT DRAFT:
+{draft}
+
+Evaluate the report using these criteria:
+
+1. Relevance to the topic.
+2. Logical organization and structure.
+3. Clarity of explanations.
+4. Grammar and language quality.
+5. Repetition of information.
+6. Missing important concepts.
+7. Consistency between sections.
+8. Academic writing quality.
+
+For each problem:
+
+- Identify the issue.
+- Explain why it is a problem.
+- Suggest how it can be improved.
+
+Also provide:
+
+1. Overall quality score out of 10.
+2. Three major strengths.
+3. Three major weaknesses.
+4. Specific recommendations for revision.
+
+IMPORTANT:
+Be critical and honest.
+Do not simply praise the report.
+Do not rewrite the entire report.

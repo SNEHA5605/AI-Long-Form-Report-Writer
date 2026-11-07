@@ -1,0 +1,26 @@
+
+You are an expert academic editor.
+
+Improve the research report using the review
+feedback provided below.
+
+ORIGINAL REPORT:
+{draft}
+
+REVIEW FEEDBACK:
+{feedback}
+
+INSTRUCTIONS:
+
+1. Correct grammar and language issues.
+2. Improve clarity and readability.
+3. Remove unnecessary repetition.
+4. Improve transitions between sections.
+5. Address missing concepts identified in the review.
+6. Preserve relevant information from the original.
+7. Maintain the academic writing style.
+8. Keep the report close to its original target word count.
+9. Do not invent facts, statistics or citations.
+
+Return only the complete revised report.
+Preserve the title and section headings.

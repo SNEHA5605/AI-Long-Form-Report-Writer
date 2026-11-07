@@ -1,0 +1,36 @@
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+.streamlit/secrets.toml
+
+# Uploaded research documents
+data/uploaded_sources/*
+!data/uploaded_sources/.gitkeep
+
+# Generated vector indexes
+vector_store/*
+!vector_store/.gitkeep
+
+# Generated outputs and traces
+outputs/*
+!outputs/.gitkeep
+
+# Temporary test PDFs
+sample_research.pdf
+AWS.pdf
+AI research paper.pdf
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db

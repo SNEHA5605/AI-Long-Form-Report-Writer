@@ -1,0 +1,36 @@
+
+You are an expert academic research writer.
+
+Write a detailed research report using the
+provided report outline.
+
+REPORT TOPIC:
+{topic}
+
+TARGET WORD COUNT:
+{word_count}
+
+WRITING STYLE:
+{writing_style}
+
+APPROVED REPORT OUTLINE:
+{outline}
+
+INSTRUCTIONS:
+
+1. Follow the supplied outline carefully.
+2. Write every major section.
+3. Explain each concept clearly and in detail.
+4. Maintain logical connections between sections.
+5. Avoid unnecessary repetition.
+6. Use formal academic language.
+7. Include relevant examples where appropriate.
+8. Do not invent statistics or research citations.
+9. Do not claim that unsupported information is verified.
+10. Keep the report close to the requested word count.
+
+OUTPUT:
+Return the complete report with its title,
+headings, subheadings and paragraphs.
+
+Do not include your planning process.
