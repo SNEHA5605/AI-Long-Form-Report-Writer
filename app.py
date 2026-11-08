@@ -18,6 +18,7 @@ from modules.source_retriever import (
 )
 
 from modules.rag_answer import generate_rag_answer
+from modules.pdf_exporter import generate_report_pdf
 
 
 # --------------------------------
@@ -666,6 +667,7 @@ if "feedback" in st.session_state:
         )
 
 
+
 # --------------------------------
 # DISPLAY REVISED REPORT
 # --------------------------------
@@ -676,10 +678,12 @@ if "revised_report" in st.session_state:
 
     st.header("9. Final Revised Report")
 
+    # Display final revised report
     st.markdown(
         st.session_state["revised_report"]
     )
 
+    # Calculate word count
     revised_word_count = len(
         st.session_state["revised_report"].split()
     )
@@ -689,6 +693,41 @@ if "revised_report" in st.session_state:
         revised_word_count
     )
 
+    st.divider()
+
+    # PDF DOWNLOAD FEATURE
+    st.subheader("Download Your Report")
+
+    st.write(
+        "Download your final revised report "
+        "as a professionally formatted PDF document."
+    )
+
+    try:
+
+        # Convert revised report into PDF
+        pdf_data = generate_report_pdf(
+            st.session_state["revised_report"],
+            report_title=st.session_state.get(
+                "topic",
+                "AI Generated Report"
+            )
+        )
+
+        # Download button
+        st.download_button(
+            label="📄 Download Final Report as PDF",
+            data=pdf_data,
+            file_name="AI_Long_Form_Report.pdf",
+            mime="application/pdf",
+            key="download_final_report_pdf"
+        )
+
+    except Exception as error:
+
+        st.error(
+            f"PDF generation failed: {error}"
+        )
 
 # --------------------------------
 # U2 PROMPT CHAIN TRACE
