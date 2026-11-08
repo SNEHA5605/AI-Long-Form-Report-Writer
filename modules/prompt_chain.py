@@ -1,4 +1,4 @@
-
+import time
 import json
 import os
 from datetime import datetime
@@ -25,46 +25,64 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # FUNCTION 1: COMMUNICATE WITH GEMINI
 # --------------------------------------------------
 
+
 def call_gemini(prompt):
 
-    # First, check environment variables
     api_key = os.getenv("GEMINI_API_KEY")
 
-    # If not found, check Streamlit Secrets
     if not api_key:
         try:
             api_key = st.secrets["GEMINI_API_KEY"]
         except Exception:
             api_key = None
 
-    # Check whether API key exists
     if not api_key:
         raise RuntimeError(
             "Gemini API key is missing. "
-            "Please configure GEMINI_API_KEY "
-            "in Streamlit Secrets."
+            "Please configure GEMINI_API_KEY in Streamlit Secrets."
         )
 
-    # Create Gemini API client
     client = genai.Client(api_key=api_key)
 
-    # Send prompt to Gemini
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            temperature=0.4,
-            max_output_tokens=2500
-        )
-    )
+    # Try up to 4 times if Google returns a 503 error
+    for attempt in range(4):
 
-    # Validate response
-    if not response.text:
-        raise RuntimeError(
-            "Gemini returned an empty response."
-        )
+        try:
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.4,
+                    max_output_tokens=2500
+                )
+            )
 
-    return response.text.strip()
+            if not response.text:
+                raise RuntimeError(
+                    "Gemini returned an empty response."
+                )
+
+            return response.text.strip()
+
+        except Exception as error:
+
+            error_code = getattr(error, "code", None)
+            error_message = str(error).lower()
+
+            is_overloaded = (
+                error_code == 503
+                or "503" in error_message
+                or "unavailable" in error_message
+            )
+
+            if is_overloaded and attempt < 3:
+
+                wait_time = 2 ** (attempt + 1)
+
+                time.sleep(wait_time)
+
+            else:
+                raise
 
 
 # --------------------------------------------------
